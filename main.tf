@@ -66,7 +66,6 @@ resource "aws_iam_role" "lambda_exec" {
 
 resource "aws_iam_policy" "lambda_exec_policy" {
   name        = "lambda-exec-policy"
-  path        = "/"
   description = "Permissions for lambda function to execute code"
 
   policy = jsonencode({
@@ -74,20 +73,33 @@ resource "aws_iam_policy" "lambda_exec_policy" {
     Statement = [
       {
         Sid = "S3ObjectGetPermissions"
+        Effect   = "Allow"
         Action = [
           "s3:GetObject",
           "s3:PutObject"
         ]
-        Effect   = "Allow"
         Resource = "${aws_s3_bucket.artifacts.arn}/*"
+      },
+      {
+        Sid       = "AllowLambdaToCreateLogGroup"
+        Effect    = "Allow"
+        Action    = "logs:CreateLogGroup"
+        Resource  = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:*"
+      },
+      {
+        Sid       = "AllowLambdaToCreateLogStream"
+        Effect    = "Allow"
+        Action    = "logs:CreateLogStream"
+        Resource  = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.event_handler.function_name}:*"
+      },
+      {
+        Sid       = "AllowLambdaToPutLogEvents"
+        Effect    = "Allow"
+        Action    = "logs:PutLogEvents"
+        Resource  = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.event_handler.function_name}:log-stream:*"
       }
     ]
   })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_exec_policy" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  role       = aws_iam_role.lambda_exec.name
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_exec_policy-2" {
