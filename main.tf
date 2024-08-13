@@ -26,9 +26,9 @@ resource "aws_lambda_layer_version" "layer" {
 
 resource "aws_lambda_function" "event_handler" {
   function_name = "s3-event-handler"
-  role          = aws_iam_role.lambda_exec.arn
   filename      = data.archive_file.code_archive.output_path
   source_code_hash = data.archive_file.code_archive.output_base64sha256
+  role          = aws_iam_role.lambda_exec.arn
   handler       = "main.handler"
   runtime       = "python3.10"
   layers        = [aws_lambda_layer_version.layer.arn]
