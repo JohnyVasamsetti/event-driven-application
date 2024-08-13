@@ -7,10 +7,10 @@ def handler(event, context):
     for record in event['Records']:
         print(record)
         if record['eventName'] == 'ObjectRemoved:Delete':
-            print(f"create Object {event['Records'][0]['s3']['object']['key']}")
+            print(f"Deleting Object {event['Records'][0]['s3']['object']['key']} by {record['userIdentity']['principalId']}")
 
         elif record['eventName'] == 'ObjectCreated:Put':
-            print(f"Deleting object {event['Records'][0]['s3']['object']['key']} by {record['userIdentity']['principalId']}")
+            print(f"Creating object {event['Records'][0]['s3']['object']['key']} by {record['userIdentity']['principalId']}")
             bucket  = event['Records'][0]['s3']['bucket']['name']
             key     = event['Records'][0]['s3']['object']['key']
 
