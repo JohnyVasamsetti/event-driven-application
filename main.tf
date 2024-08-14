@@ -32,18 +32,40 @@ resource "aws_lambda_function" "event_handler" {
   handler       = "main.handler"
   runtime       = "python3.10"
   layers        = [aws_lambda_layer_version.layer.arn]
+
+  environment {
+    variables = {
+      sns_topic_arn = aws_sns_topic.notification_topic.arn
+    }
+  }
 }
 
 
 # bucket notifications
-resource "aws_s3_bucket_notification" "s3_event_notifications" {
+resource "aws_s3_bucket_notification" "s3_delete_and_create_event_notifications" {
   bucket = aws_s3_bucket.artifacts.id
   lambda_function {
     lambda_function_arn = aws_lambda_function.event_handler.arn
-    events = ["s3:ObjectCreated:*"]
+    events = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
     filter_prefix = "images/"
     filter_suffix = ".jpg"
   }
+}
+
+# sns topic
+resource "aws_sns_topic" "notification_topic" {
+  name = "s3-event-notifications"
+}
+
+# sqs
+resource "aws_sqs_queue" "event_queue" {
+  name = "s3-event-pool"
+}
+
+resource "aws_sns_topic_subscription" "sqs_subscribes_sns" {
+  topic_arn = aws_sns_topic.notification_topic.arn
+  protocol  = "sqs"
+  endpoint  = aws_sqs_queue.event_queue.arn
 }
 
 
