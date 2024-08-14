@@ -62,6 +62,14 @@ resource "aws_sqs_queue" "event_queue" {
   name = "s3-event-pool"
 }
 
+resource "aws_sqs_queue_policy" "sqs_access_policy" {
+  policy    = templatefile("./sqs-access-policy.json",{
+    sns_topic_arn: aws_sns_topic.notification_topic.arn,
+    sqs_pool_arn: aws_sqs_queue.event_queue.arn
+  })
+  queue_url = aws_sqs_queue.event_queue.id
+}
+
 resource "aws_sns_topic_subscription" "sqs_subscribes_sns" {
   topic_arn = aws_sns_topic.notification_topic.arn
   protocol  = "sqs"
@@ -89,38 +97,11 @@ resource "aws_iam_role" "lambda_exec" {
 resource "aws_iam_policy" "lambda_exec_policy" {
   name        = "lambda-exec-policy"
   description = "Permissions for lambda function to execute code"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid = "S3ObjectGetPermissions"
-        Effect   = "Allow"
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ]
-        Resource = "${aws_s3_bucket.artifacts.arn}/*"
-      },
-      {
-        Sid       = "AllowLambdaToCreateLogGroup"
-        Effect    = "Allow"
-        Action    = "logs:CreateLogGroup"
-        Resource  = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:*"
-      },
-      {
-        Sid       = "AllowLambdaToCreateLogStream"
-        Effect    = "Allow"
-        Action    = "logs:CreateLogStream"
-        Resource  = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.event_handler.function_name}:*"
-      },
-      {
-        Sid       = "AllowLambdaToPutLogEvents"
-        Effect    = "Allow"
-        Action    = "logs:PutLogEvents"
-        Resource  = "arn:aws:logs:us-east-1:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${aws_lambda_function.event_handler.function_name}:log-stream:*"
-      }
-    ]
+  policy = templatefile("./lambda-exec-policy.json",{
+    s3_bucket_arn : aws_s3_bucket.artifacts.arn,
+    account_id: data.aws_caller_identity.current.account_id,
+    function_name: aws_lambda_function.event_handler.function_name,
+    sns_topic_arn: aws_sns_topic.notification_topic.arn
   })
 }
 
