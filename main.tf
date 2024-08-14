@@ -35,26 +35,21 @@ resource "aws_lambda_function" "event_handler" {
 
   environment {
     variables = {
-      sns_topic_arn = aws_sns_topic.notification_topic.arn
+      sns_topic_arn = aws_sns_topic.notification_topic.arn,
+      sqs_pool_url = aws_sqs_queue.event_queue.id
     }
   }
 }
 
 
-# bucket notifications
+# bucket notifications to lambda
 resource "aws_s3_bucket_notification" "s3_delete_and_create_event_notifications" {
   bucket = aws_s3_bucket.artifacts.id
   lambda_function {
     lambda_function_arn = aws_lambda_function.event_handler.arn
-    events = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
-    filter_prefix = "images/"
+    events = ["s3:ObjectCreated:*"]
     filter_suffix = ".jpg"
   }
-}
-
-# sns topic
-resource "aws_sns_topic" "notification_topic" {
-  name = "s3-event-notifications"
 }
 
 # sqs
@@ -68,6 +63,18 @@ resource "aws_sqs_queue_policy" "sqs_access_policy" {
     sqs_pool_arn: aws_sqs_queue.event_queue.arn
   })
   queue_url = aws_sqs_queue.event_queue.id
+}
+
+resource "aws_lambda_event_source_mapping" "sqs_to_lambda_mapping" {
+  event_source_arn = aws_sqs_queue.event_queue.arn
+  function_name = aws_lambda_function.event_handler.arn
+  enabled = true
+  batch_size = 1
+}
+
+# sns topic
+resource "aws_sns_topic" "notification_topic" {
+  name = "s3-event-notifications"
 }
 
 resource "aws_sns_topic_subscription" "sqs_subscribes_sns" {
@@ -101,7 +108,8 @@ resource "aws_iam_policy" "lambda_exec_policy" {
     s3_bucket_arn : aws_s3_bucket.artifacts.arn,
     account_id: data.aws_caller_identity.current.account_id,
     function_name: aws_lambda_function.event_handler.function_name,
-    sns_topic_arn: aws_sns_topic.notification_topic.arn
+    sns_topic_arn: aws_sns_topic.notification_topic.arn,
+    sqs_pool_arn: aws_sqs_queue.event_queue.arn
   })
 }
 
