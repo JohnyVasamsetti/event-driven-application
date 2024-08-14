@@ -63,12 +63,6 @@ resource "aws_sqs_queue_policy" "sqs_access_policy" {
   queue_url = aws_sqs_queue.event_queue.id
 }
 
-resource "aws_lambda_event_source_mapping" "sqs_to_lambda_mapping" {
-  event_source_arn = aws_sqs_queue.event_queue.arn
-  function_name = aws_lambda_function.event_handler.arn
-  enabled = true
-  batch_size = 1
-}
 
 # sns topic
 resource "aws_sns_topic" "notification_topic" {

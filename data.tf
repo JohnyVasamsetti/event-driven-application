@@ -1,7 +1,7 @@
 data "archive_file" "code_archive" {
     type = "zip"
-    source_dir = "${path.module}/function"
-    output_path = "${path.module}/function.zip"
+    source_dir = "${path.module}/event_handle_function"
+    output_path = "${path.module}/event_handle_function.zip"
     
 }
 
