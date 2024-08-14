@@ -1,0 +1,44 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "S3ObjectGetPermissions",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject"
+            ],
+            "Resource": "${s3_bucket_arn}/*"
+        },
+        {
+            "Sid": "AllowLambdaToCreateLogGroup",
+            "Effect": "Allow",
+            "Action": "logs:CreateLogGroup",
+            "Resource": "arn:aws:logs:us-east-1:${account_id}:*"
+        },
+        {
+            "Sid": "AllowLambdaToCreateLogStream",
+            "Effect": "Allow",
+            "Action": "logs:CreateLogStream",
+            "Resource": "arn:aws:logs:us-east-1:${account_id}:log-group:/aws/lambda/${function_name}:*"
+        },
+        {
+            "Sid": "AllowLambdaToPutLogEvents",
+            "Effect": "Allow",
+            "Action": "logs:PutLogEvents",
+            "Resource": "arn:aws:logs:us-east-1:${account_id}:log-group:/aws/lambda/${function_name}:log-stream:*"
+        },
+        {
+            "Sid": "AllowPublishAccessToSNS",
+            "Effect": "Allow",
+            "Action": "SNS:Publish",
+            "Resource": "${ sns_topic_arn }"
+        },
+        {
+            "Sid": "AllowPublishAccessToSQS",
+            "Effect": "Allow",
+            "Action": "sqs:sendmessage",
+            "Resource": "${ sqs_pool_arn }"
+        }
+    ]
+}

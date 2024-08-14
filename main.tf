@@ -4,16 +4,14 @@ resource "aws_s3_bucket" "artifacts" {
   tags = merge(local.tags)
 }
 
-
-
 # Lambda function
 resource "null_resource" "pip_install" {
   triggers = {
-    shell_hash = "${sha256(file("${path.module}/function/requirements.txt"))}"
+    shell_hash = "${sha256(file("${path.module}/event_handle_function/requirements.txt"))}"
   }
 
   provisioner "local-exec" {
-    command = "python3 -m pip install -r ./function/requirements.txt -t ${path.module}/layer/python"
+    command = "python3 -m pip install -r ./event_handle_function/requirements.txt -t ${path.module}/layer/python"
   }
 }
 
