@@ -1,7 +1,6 @@
 # S3 bucket
 resource "aws_s3_bucket" "artifacts" {
   bucket = "artifacts-file-bucket"
-  tags = merge(local.tags)
 }
 
 # sqs
@@ -27,8 +26,7 @@ resource "aws_s3_bucket_notification" "s3_delete_and_create_event_notifications"
 resource "aws_sqs_queue_policy" "sqs_access_policy" {
   policy    = templatefile("./policies/sqs-access-policy.json",{
     sqs_pool_arn: aws_sqs_queue.event_queue.arn,
-    s3_bucket_arn: aws_s3_bucket.artifacts.arn,
-    function_name_arn: aws_lambda_function.event_processor.arn
+    s3_bucket_arn: aws_s3_bucket.artifacts.arn
   })
   queue_url = aws_sqs_queue.event_queue.id
 }
