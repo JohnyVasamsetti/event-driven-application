@@ -25,7 +25,7 @@ resource "aws_s3_bucket_notification" "s3_delete_and_create_event_notifications"
 }
 
 resource "aws_sqs_queue_policy" "sqs_access_policy" {
-  policy    = templatefile("./sqs-access-policy.json",{
+  policy    = templatefile("./policies/sqs-access-policy.json",{
     sqs_pool_arn: aws_sqs_queue.event_queue.arn,
     s3_bucket_arn: aws_s3_bucket.artifacts.arn,
     function_name_arn: aws_lambda_function.event_processor.arn
@@ -69,7 +69,7 @@ resource "aws_iam_role" "lambda_exec" {
 resource "aws_iam_policy" "lambda_exec_policy" {
   name        = "lambda-exec-policy"
   description = "Permissions for lambda function to execute code"
-  policy = templatefile("./lambda-exec-policy.json",{
+  policy = templatefile("./policies/lambda-exec-policy.json",{
     s3_bucket_arn : aws_s3_bucket.artifacts.arn,
     account_id: data.aws_caller_identity.current.account_id,
     function_name: aws_lambda_function.event_processor.function_name,
