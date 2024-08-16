@@ -93,3 +93,9 @@ resource "aws_lambda_event_source_mapping" "example" {
 resource "aws_sns_topic" "notification_topic" {
   name = "s3-event-notifications"
 }
+
+resource "aws_sns_topic_subscription" "mail_subscription_to_sns" {
+  topic_arn = aws_sns_topic.notification_topic.arn
+  protocol = "email"
+  endpoint = var.email_address
+}
