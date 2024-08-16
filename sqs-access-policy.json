@@ -1,18 +1,17 @@
 {
     "Version": "2012-10-17",
-    "Id": "example-ID",
     "Statement": [
         {
-            "Sid": "example-statement-ID",
+            "Sid": "SendMessagePermissionsToS3",
             "Effect": "Allow",
             "Principal": {
-                "Service": "sns.amazonaws.com"
+                "Service": "s3.amazonaws.com"
             },
             "Action": "sqs:SendMessage",
             "Resource": "${sqs_pool_arn}",
             "Condition": {
                 "ArnEquals": {
-                    "aws:SourceArn": "${sns_topic_arn}"
+                    "aws:SourceArn": "${s3_bucket_arn}"
                 }
             }
         }

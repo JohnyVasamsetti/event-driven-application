@@ -37,7 +37,11 @@
         {
             "Sid": "AllowPublishAccessToSQS",
             "Effect": "Allow",
-            "Action": "sqs:sendmessage",
+            "Action": [
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes"
+            ],
             "Resource": "${ sqs_pool_arn }"
         }
     ]

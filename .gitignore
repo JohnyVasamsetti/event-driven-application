@@ -1,3 +1,5 @@
 terraform*
 .terraform*
 .idea
+*.zip
+layers/event_handle_function
