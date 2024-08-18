@@ -35,7 +35,9 @@ resource "aws_lambda_function" "event_processor_function" {
   source_code_hash = data.archive_file.event_processing_code.output_base64sha256
   role          = aws_iam_role.lambda_exec_role.arn
   handler       = "main.handler"
-  runtime       = "python3.10"
+  runtime       = "python3.8"
+  architectures = ["x86_64"]
+  layers = [aws_lambda_layer_version.dependency_layer.arn]
 
   environment {
     variables = {
@@ -43,6 +45,31 @@ resource "aws_lambda_function" "event_processor_function" {
       sqs_pool_url = aws_sqs_queue.event_pool.id
     }
   }
+}
+
+resource "null_resource" "pip_install" {
+  triggers = {
+    shell_hash = sha256(file("./event-processing-function/requirements.txt"))
+  }
+  provisioner "local-exec" {
+    command = <<EOT
+      pip3 install -r ./event-processing-function/requirements.txt -t ./layers/event-processing-function/python/
+    EOT
+  }
+}
+
+data "archive_file" "lambda_layer" {
+  source_dir = "./layers/event-processing-function/"
+  output_path = "./layers/event-processing-function.zip"
+  type        = "zip"
+  depends_on = [null_resource.pip_install]
+}
+
+resource "aws_lambda_layer_version" "dependency_layer" {
+  layer_name = "python-dependencies"
+  filename   = data.archive_file.lambda_layer.output_path
+  source_code_hash = data.archive_file.lambda_layer.output_base64sha256
+  depends_on = [null_resource.pip_install]
 }
 
 resource "aws_iam_role" "lambda_exec_role" {
