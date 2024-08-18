@@ -2,7 +2,7 @@
     "Version": "2012-10-17",
     "Statement": [
         {
-            "Sid": "S3ObjectGetPermissions",
+            "Sid": "S3ObjectWritePermissions",
             "Effect": "Allow",
             "Action": [
                 "s3:GetObject",
@@ -35,7 +35,7 @@
             "Resource": "${ sns_topic_arn }"
         },
         {
-            "Sid": "AllowPublishAccessToSQS",
+            "Sid": "AllowReadAndDeleteMessageAccessOnSQS",
             "Effect": "Allow",
             "Action": [
                 "sqs:ReceiveMessage",

@@ -13,7 +13,7 @@ def handler(messages, context):
     for message in messages['Records']:
         events = eval(message['body'])
         if events.get('Event') == 's3:TestEvent' :
-            print('It was an Test event')
+            print('It was an Test Event')
         else:
             for event in events['Records']:
                 print(event['eventName'])
@@ -41,14 +41,13 @@ def handler(messages, context):
                         'timestamp' : timestamp
                     }
                     sns.publish(TopicArn=sns_topic_arn,Message=json.dumps(message_to_sns))
-                    print("Message has been added to sns")
         sqs.delete_message(
             QueueUrl = sqs_pool_url,
             ReceiptHandle = message['receiptHandle']
         )
-        print(f"Deleting message {message['messageId']} from sqs")
+        print(f"Deleted message {message['messageId']} from sqs successfully!")
 
     return {
         'statusCode': 200,
-        'body': json.dumps('Image copied to thumbnails folder successfully!')
+        'body': json.dumps(f"Messages processed successfully!")
     }
